@@ -553,7 +553,10 @@ footer a:focus-visible { border-bottom-color: var(--teal); }
 
 /* ---------- mobil ---------- */
 @media (max-width: 680px) {
-  .desktop-only { display: none !important; }
+  .desktop-only,
+  .mobile-hide { display: none !important; }
+
+  .toolbar { justify-content: flex-end; }
   .wrap { padding: 0 12px; }
 
   header { padding: 22px 0 18px; }

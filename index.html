@@ -44,14 +44,15 @@
       <p class="info" id="alanInfo"></p>
 
       <div class="toolbar">
-        <h2>Seçili alandaki üniversiteler</h2>
+        <h2 class="mobile-hide">Seçili alandaki üniversiteler</h2>
         <button class="dl" id="alanDl" type="button">CSV indir</button>
       </div>
-      <div class="table-wrap" id="alanTable"></div>
+      <div class="table-wrap mobile-hide" id="alanTable"></div>
       <p class="note">
         X ekseni <b>Kalite</b> (0–60), Y ekseni <b>Hacım</b> (0–40). Her nokta bir üniversitedir;
         kesikli çizgiler seçili alt alandaki medyan değerleri gösterir. Bir noktaya tıklayarak
-        üniversiteyi vurgulayabilirsiniz. Sütun başlıklarına tıklayarak tabloyu sıralayabilirsiniz.
+        üniversiteyi vurgulayabilirsiniz.
+        <span class="mobile-hide">Sütun başlıklarına tıklayarak tabloyu sıralayabilirsiniz.</span>
       </p>
     </section>
 
@@ -76,10 +77,10 @@
       <p class="info" id="uniInfo"></p>
 
       <div class="toolbar">
-        <h2>Üniversitenin alt alanları</h2>
+        <h2 class="mobile-hide">Üniversitenin alt alanları</h2>
         <button class="dl" id="uniDl" type="button">CSV indir</button>
       </div>
-      <div class="table-wrap" id="uniTable"></div>
+      <div class="table-wrap mobile-hide" id="uniTable"></div>
       <p class="note">
         Bu görünümde alt alanlar <b>üniversitenin kendi içinde</b> karşılaştırılır (üniversite bazlı
         normalizasyon). Bir alt alanın Türkiye genelindeki konumunu görmek için “Alan Bazlı” sekmesini kullanın.
