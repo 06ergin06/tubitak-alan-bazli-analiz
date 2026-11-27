@@ -46,6 +46,18 @@ tools/build_data.py   → data/*.json → assets/data.js
 Sekmeler doğrudan bağlantı ile açılabilir: `#alan`, `#universite`, `#karsilastirma`
 (ör. `index.html#karsilastirma`).
 
+### Mobil görünüm
+
+680px altındaki ekranlarda Plotly grafikleri yerine **dokunmatik kart listeleri** kullanılır
+(küçük noktalara basmak yerine okunaklı satırlar, yatay kaydırma yok):
+
+- **Alan Bazlı:** üniversiteler hacım sırasıyla listelenir; kalite/hacım çubukları ve kartlara dokunarak vurgulama.
+- **Üniversite Bazlı:** alt alanlar ana alana göre **açılır gruplar** içinde gösterilir.
+- **Karşılaştırma:** üstte kazanan kartları, altta alt alan bazında "kim önde" listesi.
+
+Listeler ilk 15/12 satırla sınırlıdır; **Tümünü göster** ile genişletilir. Ekran büyütüldüğünde
+aynı veriler otomatik olarak Plotly grafiklerine döner.
+
 ### Canlı site
 
 GitHub Pages: <https://06ergin06.github.io/tubitak-alan-bazli-analiz/>

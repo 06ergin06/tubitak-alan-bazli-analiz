@@ -183,6 +183,62 @@
     return String(u).replace(/\s*ÜNİVERSİTESİ\s*$/, '');
   }
 
+  // ---------- mobil kart görünümü ----------
+  const mobileExpanded = new WeakMap();
+  const mq = window.matchMedia('(max-width: 680px)');
+  const isMobile = () => mq.matches;
+
+  function ensureChartMode(id) {
+    const el = $(id);
+    const want = isMobile() ? 'mobile' : 'desktop';
+    const switched = el.dataset.mode !== want;
+    if (switched) {
+      if (want === 'mobile') {
+        try { Plotly.purge(id); } catch (err) { /* yoksay */ }
+      }
+      el.innerHTML = '';
+      el.className = want === 'mobile' ? 'chart chart-mobile' : 'chart';
+      el.dataset.mode = want;
+    }
+    return { el: el, switched: switched, mobile: want === 'mobile' };
+  }
+
+  function mBar(label, value, max, cls) {
+    const pct = Math.max(0, Math.min(100, (value / max) * 100));
+    return '<div class="m-metric"><span>' + label + '</span>' +
+      '<span class="m-track"><span class="m-fill ' + cls + '" style="width:' + pct.toFixed(1) + '%"></span></span>' +
+      '<span class="m-val">' + fmt(value) + '</span></div>';
+  }
+
+  function mCard(o) {
+    return '<div class="m-card' + (o.hi ? ' hi' : '') + '"' +
+      (o.clickable ? ' data-index="' + o.index + '" role="button" tabindex="0"' : '') + '>' +
+      '<div class="m-top">' +
+        (o.rank != null ? '<span class="m-rank">' + o.rank + '</span>' : '') +
+        '<span class="m-name">' + o.name + '</span>' +
+        (o.badge ? '<span class="m-badge">' + o.badge + '</span>' : '') +
+      '</div>' +
+      (o.meta ? '<div class="m-meta">' + o.meta + '</div>' : '') +
+      (o.rows || []).map((b) => mBar(b.label, b.value, b.max, b.cls)).join('') +
+      '</div>';
+  }
+
+  function mMoreButton(expanded, total, shown) {
+    if (!expanded && total <= shown) return '';
+    return '<button type="button" class="m-more">' +
+      (expanded ? 'Daha az göster' : 'Tümünü göster (' + total + ')') + '</button>';
+  }
+
+  function bindMore(el, expanded, refresh) {
+    const btn = el.querySelector('.m-more');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        mobileExpanded.set(el, !expanded);
+        refresh();
+      });
+    }
+  }
+
   // ---------- ALAN BAZLI ----------
   function populateAlanSelects() {
     fillSelect($('alanSel'), META.ana_alanlar);
@@ -195,6 +251,44 @@
     fillSelect($('altSel'), META.alt_alanlar[alan] || []);
   }
 
+  function renderAlanMobile(el, rows, medK, medH, uni) {
+    const sorted = rows.slice().sort((a, b) => b[4] - a[4] || b[3] - a[3]);
+    const expanded = mobileExpanded.get(el) === true;
+    const shown = expanded ? sorted : sorted.slice(0, 15);
+
+    el.innerHTML =
+      '<div class="m-summary"><b>' + rows.length + '</b> üniversite · Medyan kalite <b>' +
+      fmt(medK) + '</b> · Medyan hacım <b>' + fmt(medH) + '</b></div>' +
+      '<div class="m-list">' +
+      shown.map((r, i) => mCard({
+        rank: i + 1,
+        name: r[2],
+        hi: r[2] === uni,
+        clickable: true,
+        index: i,
+        rows: [
+          { label: 'Kalite', value: r[3], max: 60, cls: 'k' },
+          { label: 'Hacım', value: r[4], max: 40, cls: 'h' },
+        ],
+      })).join('') +
+      '</div>' +
+      mMoreButton(expanded, sorted.length, shown.length);
+
+    el.querySelectorAll('.m-card[data-index]').forEach((card) => {
+      const pick = () => {
+        const r = shown[Number(card.dataset.index)];
+        if (!r) return;
+        $('uniSel').value = r[2];
+        renderAlan();
+      };
+      card.addEventListener('click', pick);
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); }
+      });
+    });
+    bindMore(el, expanded, renderAlan);
+  }
+
   function renderAlan() {
     const alan = $('alanSel').value;
     const alt = $('altSel').value;
@@ -204,6 +298,11 @@
     const medK = median(rows.map((r) => r[3]));
     const medH = median(rows.map((r) => r[4]));
     const showLabels = $('alanLabels').checked;
+    const mode = ensureChartMode('chartAlan');
+
+    if (mode.mobile) {
+      renderAlanMobile(mode.el, rows, medK, medH, uni);
+    } else {
 
     const trace = {
       type: 'scatter',
@@ -228,6 +327,8 @@
     const layout = baseLayout();
     layout.shapes = medianShapes(medK, medH);
     Plotly.react('chartAlan', [trace], layout, PLOT_CFG);
+    if (mode.switched) bindAlanChartClick();
+    }
 
     $('alanInfo').textContent =
       rows.length + ' üniversite · Medyan kalite ' + fmt(medK) + ' · Medyan hacım ' + fmt(medH) +
@@ -256,6 +357,36 @@
     fillSelect($('altSel2'), alts, 'Tümü');
   }
 
+  function renderUniMobile(el, rows, medK, medH) {
+    const groups = {};
+    for (const r of rows) (groups[r[1]] = groups[r[1]] || []).push(r);
+    const order = META.ana_alanlar.filter((a) => groups[a]);
+    for (const a of Object.keys(groups)) if (order.indexOf(a) < 0) order.push(a);
+
+    const expanded = mobileExpanded.get(el) === true;
+    const shown = expanded ? order : order.slice(0, 3);
+
+    el.innerHTML =
+      '<div class="m-summary"><b>' + rows.length + '</b> alt alan · Medyan kalite <b>' +
+      fmt(medK) + '</b> · Medyan hacım <b>' + fmt(medH) + '</b></div>' +
+      shown.map((g, gi) =>
+        '<details class="m-group"' + (gi === 0 ? ' open' : '') + '>' +
+        '<summary>' + g + ' <span>(' + groups[g].length + ')</span></summary>' +
+        '<div class="m-list">' +
+        groups[g].map((r) => mCard({
+          name: r[2],
+          rows: [
+            { label: 'Kalite', value: r[3], max: 60, cls: 'k' },
+            { label: 'Hacım', value: r[4], max: 40, cls: 'h' },
+          ],
+        })).join('') +
+        '</div></details>'
+      ).join('') +
+      mMoreButton(expanded, order.length, shown.length);
+
+    bindMore(el, expanded, renderUni);
+  }
+
   function renderUni() {
     const uni = $('uniSel2').value;
     const alan = $('alanSel2').value;
@@ -268,6 +399,11 @@
     const medK = median(rows.map((r) => r[3]));
     const medH = median(rows.map((r) => r[4]));
     const showLabels = $('uniLabels').checked;
+    const mode = ensureChartMode('chartUni');
+
+    if (mode.mobile) {
+      renderUniMobile(mode.el, rows, medK, medH);
+    } else {
 
     const trace = {
       type: 'scatter',
@@ -294,6 +430,7 @@
     const layout = baseLayout();
     layout.shapes = medianShapes(medK, medH);
     Plotly.react('chartUni', [trace], layout, PLOT_CFG);
+    }
 
     $('uniInfo').textContent =
       uni + ' · ' + rows.length + ' alt alan · Medyan kalite ' + fmt(medK) +
@@ -336,8 +473,8 @@
   }
 
   function showCmpEmpty(msg) {
-    clearCmpChart();
-    $('chartCmp').innerHTML = '<div class="empty">' + msg + '</div>';
+    try { Plotly.purge('chartCmp'); } catch (err) { /* yoksay */ }
+    ensureChartMode('chartCmp').el.innerHTML = '<div class="empty">' + msg + '</div>';
     $('cmpScore').innerHTML = '';
     $('cmpInfo').textContent = '';
     renderTable($('cmpTable'), ['Üniversite', 'Kalite', 'Hacım'], [], { defaultSort: 1 });
@@ -429,6 +566,54 @@
     }
   }
 
+  function renderCompareAllMobile(el, items, s1, s2, uni1, uni2) {
+    const sorted = items
+      .filter((it) => it.t1 != null && it.t2 != null)
+      .sort((a, b) => Math.abs(b.t1 - b.t2) - Math.abs(a.t1 - a.t2));
+    const expanded = mobileExpanded.get(el) === true;
+    const shown = expanded ? sorted : sorted.slice(0, 12);
+    const h1 = shortName(uni1);
+    const h2 = shortName(uni2);
+
+    el.innerHTML =
+      '<div class="m-summary">Toplam <b>' + fmt(s1.total) + '</b> vs <b>' + fmt(s2.total) +
+      '</b> · farkı en büyük alt alanlar önce</div>' +
+      '<div class="m-list">' +
+      shown.map((it) => {
+        const d = it.t1 - it.t2;
+        return mCard({
+          name: it.alt,
+          badge: d > EPS ? h1 + ' önde' : d < -EPS ? h2 + ' önde' : 'eşit',
+          meta: 'Fark ' + (d > 0 ? '+' : '') + fmt(d),
+          rows: [
+            { label: h1.slice(0, 16), value: it.t1, max: 100, cls: 'k' },
+            { label: h2.slice(0, 16), value: it.t2, max: 100, cls: 'o' },
+          ],
+        });
+      }).join('') +
+      '</div>' +
+      mMoreButton(expanded, sorted.length, shown.length);
+
+    bindMore(el, expanded, renderCompare);
+  }
+
+  function renderCompareOneMobile(el, present, s1, s2) {
+    const win = s1 && s2 ? (s1.total > s2.total + EPS ? 1 : s2.total > s1.total + EPS ? 2 : 0) : 0;
+    el.innerHTML =
+      '<div class="m-list">' +
+      present.map((p) => mCard({
+        name: p.uni,
+        hi: win === (p.uni === present[0].uni ? 1 : 2),
+        badge: win === (p.uni === present[0].uni ? 1 : 2) ? 'Toplamda önde' : '',
+        rows: [
+          { label: 'Kalite', value: p.s.k, max: 60, cls: 'k' },
+          { label: 'Hacım', value: p.s.h, max: 40, cls: 'h' },
+          { label: 'Toplam', value: p.s.total, max: 100, cls: 't' },
+        ],
+      })).join('') +
+      '</div>';
+  }
+
   // Alt alan = Tümü: alt alan bazında toplam puan farkı (kim önde?)
   function renderCompareAll(uni1, uni2, alan) {
     const rows1 = A.rows.filter((r) => r[0] === alan && r[2] === uni1);
@@ -473,6 +658,10 @@
     const diffs = chartItems.map((it) => it.t1 - it.t2);
     const maxAbs = Math.max(1, ...diffs.map((d) => Math.abs(d))) * 1.2;
 
+    const mode = ensureChartMode('chartCmp');
+    if (mode.mobile) {
+      renderCompareAllMobile(mode.el, items, s1, s2, uni1, uni2);
+    } else {
     clearCmpChart();
     Plotly.newPlot('chartCmp', [{
       type: 'bar',
@@ -512,6 +701,7 @@
         },
       ],
     }, PLOT_CFG);
+    }
 
     const h1 = shortName(uni1);
     const h2 = shortName(uni2);
@@ -565,7 +755,11 @@
     if (s2) present.push({ uni: uni2, s: s2 });
 
     const labels = present.map((p) => shortName(p.uni));
+    const mode = ensureChartMode('chartCmp');
 
+    if (mode.mobile) {
+      renderCompareOneMobile(mode.el, present, s1, s2);
+    } else {
     clearCmpChart();
     Plotly.newPlot('chartCmp', [
       {
@@ -618,6 +812,7 @@
         font: { size: 13, color: '#0b2545' },
       })),
     }, PLOT_CFG);
+    }
 
     const headers = ['Üniversite', 'Kalite', 'Hacım', 'Toplam'];
     const tableRows = present.map((p) => [p.uni, p.s.k, p.s.h, p.s.total]);
@@ -635,6 +830,28 @@
     $('cmpTable')._csvName = 'yetkinlik_' + slug(alt) + '_karsilastirma.csv';
 
     $('cmpInfo').textContent = alan + ' / ' + alt;
+  }
+
+  function bindAlanChartClick() {
+    const chart = $('chartAlan');
+    if (!chart || typeof chart.on !== 'function') return;
+    if (typeof chart.removeListener === 'function' && window.__alanClickHandler) {
+      chart.removeListener('plotly_click', window.__alanClickHandler);
+    }
+    window.__alanClickHandler = (e) => {
+      const p = e.points && e.points[0];
+      if (!p) return;
+      const ht = (p.data && p.data.hovertext && p.data.hovertext[p.pointNumber]) || '';
+      const m = ht.match(/<b>(.*?)<\/b>/);
+      if (!m) return;
+      const sel = $('uniSel');
+      const opt = Array.prototype.find.call(sel.options, (o) => o.value === m[1]);
+      if (opt) {
+        sel.value = m[1];
+        renderAlan();
+      }
+    };
+    chart.on('plotly_click', window.__alanClickHandler);
   }
 
   // ---------- olaylar ----------
@@ -691,23 +908,7 @@
       downloadCSV(el._csvName || 'yetkinlik_karsilastirma.csv', el._csvHeaders, el._data);
     });
 
-    const chart = $('chartAlan');
-    if (chart && typeof chart.on === 'function') {
-      chart.on('plotly_click', (e) => {
-        const p = e.points && e.points[0];
-        if (!p) return;
-        const ht = (p.data && p.data.hovertext && p.data.hovertext[p.pointNumber]) || '';
-        const m = ht.match(/<b>(.*?)<\/b>/);
-        if (!m) return;
-        const full = m[1];
-        const sel = $('uniSel');
-        const opt = Array.prototype.find.call(sel.options, (o) => o.value === full);
-        if (opt) {
-          sel.value = full;
-          renderAlan();
-        }
-      });
-    }
+    bindAlanChartClick();
   }
 
   // ---------- başlat ----------
@@ -718,6 +919,15 @@
   populateCmpSelects();
   renderCompare();
   bind();
+
+  // ekran boyutu değişince masaüstü/mobil görünüm arasında geçiş
+  const rerenderAll = () => {
+    renderAlan();
+    renderUni();
+    renderCompare();
+  };
+  if (mq.addEventListener) mq.addEventListener('change', rerenderAll);
+  else if (mq.addListener) mq.addListener(rerenderAll);
 
   // URL hash ile sekme açma: #alan, #universite, #karsilastirma
   if (location.hash) {
