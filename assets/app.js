@@ -154,23 +154,6 @@
     el._data = data;
   }
 
-  function downloadCSV(filename, headers, rows) {
-    const esc = (v) => {
-      const s = String(v == null ? '' : v);
-      return /[";\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-    };
-    const body = [headers].concat(rows).map((r) => r.map(esc).join(';')).join('\r\n');
-    const blob = new Blob(['\ufeff' + body], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-  }
-
   function slug(s) {
     return String(s)
       .toLocaleLowerCase('tr')
@@ -340,8 +323,6 @@
       rows.map((r) => [r[2], r[3], r[4]]),
       { defaultSort: 2 }
     );
-    $('alanTable')._csvHeaders = ['Üniversite', 'Kalite', 'Hacım'];
-    $('alanTable')._csvName = 'yetkinlik_' + slug(alan) + '_' + slug(alt) + '.csv';
   }
 
   // ---------- ÜNİVERSİTE BAZLI ----------
@@ -442,8 +423,6 @@
       rows.map((r) => [r[2], r[1], r[3], r[4]]),
       { defaultSort: 3 }
     );
-    $('uniTable')._csvHeaders = ['Alt Alan', 'Ana Alan', 'Kalite', 'Hacım'];
-    $('uniTable')._csvName = 'yetkinlik_' + slug(uni) + '.csv';
   }
 
   // ---------- ÜNİVERSİTE KARŞILAŞTIRMA ----------
@@ -478,8 +457,6 @@
     $('cmpScore').innerHTML = '';
     $('cmpInfo').textContent = '';
     renderTable($('cmpTable'), ['Üniversite', 'Kalite', 'Hacım'], [], { defaultSort: 1 });
-    $('cmpTable')._csvHeaders = ['Üniversite', 'Kalite', 'Hacım'];
-    $('cmpTable')._csvName = 'yetkinlik_karsilastirma.csv';
   }
 
   function cardHtml(uni, s, isWinner, altWins) {
@@ -726,8 +703,6 @@
         return '';
       },
     });
-    $('cmpTable')._csvHeaders = headers;
-    $('cmpTable')._csvName = 'yetkinlik_' + slug(alan) + '_karsilastirma.csv';
 
     $('cmpInfo').textContent =
       alan + ' · ' + items.length + ' alt alan · ' +
@@ -826,8 +801,6 @@
         return mine > other[key] + EPS ? 'win-cell' : mine < other[key] - EPS ? 'lose-cell' : '';
       },
     });
-    $('cmpTable')._csvHeaders = headers;
-    $('cmpTable')._csvName = 'yetkinlik_' + slug(alt) + '_karsilastirma.csv';
 
     $('cmpInfo').textContent = alan + ' / ' + alt;
   }
@@ -885,28 +858,16 @@
     $('altSel').addEventListener('change', renderAlan);
     $('uniSel').addEventListener('change', renderAlan);
     $('alanLabels').addEventListener('change', renderAlan);
-    $('alanDl').addEventListener('click', () => {
-      const el = $('alanTable');
-      downloadCSV(el._csvName || 'yetkinlik_alan.csv', el._csvHeaders, el._data);
-    });
 
     $('uniSel2').addEventListener('change', renderUni);
     $('alanSel2').addEventListener('change', () => { syncAltSelect2(); renderUni(); });
     $('altSel2').addEventListener('change', renderUni);
     $('uniLabels').addEventListener('change', renderUni);
-    $('uniDl').addEventListener('click', () => {
-      const el = $('uniTable');
-      downloadCSV(el._csvName || 'yetkinlik_universite.csv', el._csvHeaders, el._data);
-    });
 
     $('cmpUni1').addEventListener('change', renderCompare);
     $('cmpUni2').addEventListener('change', renderCompare);
     $('cmpAlan').addEventListener('change', () => { syncCmpAlt(); renderCompare(); });
     $('cmpAlt').addEventListener('change', renderCompare);
-    $('cmpDl').addEventListener('click', () => {
-      const el = $('cmpTable');
-      downloadCSV(el._csvName || 'yetkinlik_karsilastirma.csv', el._csvHeaders, el._data);
-    });
 
     bindAlanChartClick();
   }

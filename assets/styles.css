@@ -348,21 +348,6 @@ td.diff-neg {
   color: var(--navy);
 }
 
-button.dl {
-  background: var(--teal);
-  color: #fff;
-  border: 0;
-  padding: 9px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
-}
-
-button.dl:hover { filter: brightness(1.08); }
-button.dl:active { transform: translateY(1px); }
-
 .table-wrap {
   max-height: 440px;
   overflow: auto;
@@ -556,7 +541,6 @@ footer a:focus-visible { border-bottom-color: var(--teal); }
   .desktop-only,
   .mobile-hide { display: none !important; }
 
-  .toolbar { justify-content: flex-end; }
   .wrap { padding: 0 12px; }
 
   header { padding: 22px 0 18px; }
@@ -606,7 +590,6 @@ footer a:focus-visible { border-bottom-color: var(--teal); }
   #chartCmp { height: 540px; }
 
   .toolbar { margin: 14px 0 8px; }
-  button.dl { min-height: 42px; padding: 10px 16px; }
   .table-wrap { max-height: 360px; }
   table { font-size: 12px; }
   th, td { padding: 7px 8px; }

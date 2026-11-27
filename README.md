@@ -20,8 +20,7 @@ işlenebilir dosyalara ve Plotly tabanlı interaktif bir web sitesine dönüşt�
 
 > Bu iki görünümdeki puanlar farklı normalizasyonlara sahiptir; birbirleriyle doğrudan kıyaslanmamalıdır.
 
-- CSV dosyaları UTF-8 BOM’lu ve virgül ayraçlıdır (Excel uyumlu).
-- Site içi CSV indirmeleri Excel-TR uyumu için noktalı virgül (`;`) ayraçlıdır.
+- CSV dosyaları UTF-8 BOM’lu ve virgül ayraçlıdır (Excel uyumlu). Sitede indirme butonu bulunmaz; veriler doğrudan bu dosyalardadır.
 
 ## Web sitesi
 
