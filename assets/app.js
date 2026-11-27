@@ -27,6 +27,10 @@
     for (const it of items) sel.add(new Option(it, it));
   }
 
+  function trSort(items) {
+    return items.slice().sort((a, b) => String(a).localeCompare(String(b), 'tr'));
+  }
+
   const PLOT_CFG = {
     responsive: true,
     displaylogo: false,
@@ -225,7 +229,7 @@
   // ---------- ALAN BAZLI ----------
   function populateAlanSelects() {
     fillSelect($('alanSel'), META.ana_alanlar);
-    fillSelect($('uniSel'), META.universiteler, '— seçiniz (isteğe bağlı) —');
+    fillSelect($('uniSel'), trSort(META.universiteler), '— seçiniz (isteğe bağlı) —');
     syncAltSelect();
   }
 
@@ -327,7 +331,7 @@
 
   // ---------- ÜNİVERSİTE BAZLI ----------
   function populateUniSelects() {
-    fillSelect($('uniSel2'), META.universite_grafik);
+    fillSelect($('uniSel2'), trSort(META.universite_grafik));
     fillSelect($('alanSel2'), META.ana_alanlar, 'Tümü');
     fillSelect($('altSel2'), [], 'Tümü');
   }
@@ -429,8 +433,8 @@
   const EPS = 0.005;
 
   function populateCmpSelects() {
-    fillSelect($('cmpUni1'), META.universite_grafik);
-    fillSelect($('cmpUni2'), META.universite_grafik);
+    fillSelect($('cmpUni1'), trSort(META.universite_grafik));
+    fillSelect($('cmpUni2'), trSort(META.universite_grafik));
 
     const uniItu = 'İSTANBUL TEKNİK ÜNİVERSİTESİ';
     const uniOdtu = 'ORTA DOĞU TEKNİK ÜNİVERSİTESİ';
