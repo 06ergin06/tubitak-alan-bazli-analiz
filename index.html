@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Üniversitelerin Alan Bazında Yetkinlik Analizi · 2026</title>
+  <meta name="description" content="TÜBİTAK 2026 Üniversitelerin Alan Bazında Yetkinlik Analizi verileriyle interaktif keşif aracı.">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <span class="eyebrow">TÜBİTAK · 2026</span>
+      <h1>Üniversitelerin Alan Bazında Yetkinlik Analizi</h1>
+      <p>20 ana alan · 134 alt alan · 198 üniversite</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="tabs" role="tablist">
+      <button class="tab-btn active" data-tab="alan" role="tab" aria-selected="true">Alan Bazlı</button>
+      <button class="tab-btn" data-tab="universite" role="tab" aria-selected="false">Üniversite Bazlı</button>
+      <button class="tab-btn" data-tab="karsilastirma" role="tab" aria-selected="false">Üniversite Karşılaştırma</button>
+    </div>
+
+    <section class="tab active" id="tab-alan">
+      <div class="controls">
+        <div class="field">
+          <label for="alanSel">Ana Alan</label>
+          <select id="alanSel"></select>
+        </div>
+        <div class="field">
+          <label for="altSel">Alt Alan</label>
+          <select id="altSel"></select>
+        </div>
+        <div class="field">
+          <label for="uniSel">Vurgulanan Üniversite</label>
+          <select id="uniSel"></select>
+        </div>
+        <label class="chk"><input type="checkbox" id="alanLabels"> Etiketleri göster</label>
+      </div>
+
+      <div id="chartAlan" class="chart" role="img" aria-label="Kalite ve hacım düzleminde üniversiteler"></div>
+      <p class="info" id="alanInfo"></p>
+
+      <div class="toolbar">
+        <h2>Seçili alandaki üniversiteler</h2>
+        <button class="dl" id="alanDl" type="button">CSV indir</button>
+      </div>
+      <div class="table-wrap" id="alanTable"></div>
+      <p class="note">
+        X ekseni <b>Kalite</b> (0–60), Y ekseni <b>Hacım</b> (0–40). Her nokta bir üniversitedir;
+        kesikli çizgiler seçili alt alandaki medyan değerleri gösterir. Bir noktaya tıklayarak
+        üniversiteyi vurgulayabilirsiniz. Sütun başlıklarına tıklayarak tabloyu sıralayabilirsiniz.
+      </p>
+    </section>
+
+    <section class="tab" id="tab-universite">
+      <div class="controls">
+        <div class="field">
+          <label for="uniSel2">Üniversite</label>
+          <select id="uniSel2"></select>
+        </div>
+        <div class="field">
+          <label for="alanSel2">Ana Alan</label>
+          <select id="alanSel2"></select>
+        </div>
+        <div class="field">
+          <label for="altSel2">Alt Alan</label>
+          <select id="altSel2"></select>
+        </div>
+        <label class="chk"><input type="checkbox" id="uniLabels" checked> Etiketleri göster</label>
+      </div>
+
+      <div id="chartUni" class="chart" role="img" aria-label="Üniversitenin alt alanları"></div>
+      <p class="info" id="uniInfo"></p>
+
+      <div class="toolbar">
+        <h2>Üniversitenin alt alanları</h2>
+        <button class="dl" id="uniDl" type="button">CSV indir</button>
+      </div>
+      <div class="table-wrap" id="uniTable"></div>
+      <p class="note">
+        Bu görünümde alt alanlar <b>üniversitenin kendi içinde</b> karşılaştırılır (üniversite bazlı
+        normalizasyon). Bir alt alanın Türkiye genelindeki konumunu görmek için “Alan Bazlı” sekmesini kullanın.
+      </p>
+    </section>
+
+    <section class="tab" id="tab-karsilastirma">
+      <div class="controls">
+        <div class="field">
+          <label for="cmpUni1">1. Üniversite</label>
+          <select id="cmpUni1"></select>
+        </div>
+        <div class="field">
+          <label for="cmpUni2">2. Üniversite</label>
+          <select id="cmpUni2"></select>
+        </div>
+        <div class="field">
+          <label for="cmpAlan">Ana Alan</label>
+          <select id="cmpAlan"></select>
+        </div>
+        <div class="field">
+          <label for="cmpAlt">Alt Alan</label>
+          <select id="cmpAlt"></select>
+        </div>
+      </div>
+
+      <div id="cmpScore" class="scoreboard"></div>
+      <div id="chartCmp" class="chart" role="img" aria-label="Seçilen üniversitelerin karşılaştırması"></div>
+      <p class="info" id="cmpInfo"></p>
+
+      <div class="toolbar">
+        <h2>Karşılaştırma tablosu</h2>
+        <button class="dl" id="cmpDl" type="button">CSV indir</button>
+      </div>
+      <div class="table-wrap" id="cmpTable"></div>
+      <p class="note">
+        Önce iki üniversiteyi seçin, ardından ana alanı belirleyin. <b>Alt Alan</b> olarak
+        <b>Tümü</b> seçilirse her alt alandaki <b>toplam puan farkı</b> gösterilir: çubuk sağa
+        gidiyorsa 1. üniversite, sola gidiyorsa 2. üniversite öndedir. Tek bir alt alan
+        seçilirse iki üniversitenin kalite + hacım toplamı yan yana gösterilir.
+        Toplam puan = <b>Kalite (0–60) + Hacım (0–40)</b>.
+      </p>
+    </section>
+
+    <footer>
+      Kaynak: TÜBİTAK, <i>Üniversitelerin Alan Bazında Yetkinlik Analizi 2026</i>.
+      Veriler TÜBİTAK’ın resmi interaktif aracından alınmıştır.
+    </footer>
+  </main>
+
+  <script src="vendor/plotly.min.js"></script>
+  <script src="assets/data.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
