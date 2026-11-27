@@ -30,7 +30,7 @@ index.html            → ana sayfa (sekmeler, filtreler, grafikler)
 assets/app.js         → uygulama mantığı (Plotly)
 assets/styles.css     → stiller
 assets/data.js        → sitede kullanılan kompakt veri (üretilir)
-vendor/plotly.min.js  → Plotly.js 2.35.2 (yerel, çevrimdışı çalışır)
+vendor/plotly-basic.min.js → Plotly.js 2.35.2 basic (scatter + bar; yerel, çevrimdışı çalışır)
 tools/build_data.py   → data/*.json → assets/data.js
 ```
 
