@@ -46,6 +46,12 @@ tools/build_data.py   → data/*.json → assets/data.js
 Sekmeler doğrudan bağlantı ile açılabilir: `#alan`, `#universite`, `#karsilastirma`
 (ör. `index.html#karsilastirma`).
 
+### Canlı site
+
+GitHub Pages: <https://06ergin06.github.io/tubitak-alan-bazli-analiz/>
+
+`main` branch'ine push yapıldığında Pages sitesi otomatik güncellenir.
+
 ### Çalıştırma
 
 - `index.html` dosyasını doğrudan tarayıcıda açabilirsiniz (file://).
